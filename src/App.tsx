@@ -1,33 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useRef } from 'react'
 import './App.css'
+import YouTube, { YouTubeProps, YouTubePlayer } from 'react-youtube'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const playerRef = useRef<YouTubePlayer | null>(null)
+  const [start, setStart] = useState(0)
+  const [end, setEnd] = useState(10)
+  const [videoId, setVideoId] = useState("V_MqoUm3jX")
+
+  const onPlayerReady: YouTubeProps['onReady'] = (event) => {
+    playerRef.current = event.target
+  }
+
+const onPlayerStateChange: YouTubeProps['onStateChange'] = (event) => {
+      if (event.data === window.YT.PlayerState.ENDED && playerRef.current) {
+        playerRef.current.seekTo(start, true).catch((error) => {
+          console.error('Error seeking to start:', error)
+        })
+      }
+    }
 
   return (
     <>
+      <h1>Kaelipse</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <YouTube
+          videoId={videoId}
+          opts={{ playerVars: { start, end } }}
+          onReady={onPlayerReady}
+          onStateChange={onPlayerStateChange}
+        />
+        <div>
+          <label>
+            Video ID:
+            <input
+              type="text"
+              value={videoId}
+              onChange={(e) => setVideoId(e.target.value)}
+            />
+          </label>
+          <label>
+            Start:
+            <input
+              type="number"
+              value={start}
+              onChange={(e) => setStart(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            End:
+            <input
+              type="number"
+              value={end}
+              onChange={(e) => setEnd(Number(e.target.value))}
+            />
+          </label>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
